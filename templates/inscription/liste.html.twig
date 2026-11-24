@@ -1,0 +1,91 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des inscriptions{% endblock %}
+
+{% block body %}
+
+    <div class="container mt-4">
+
+        <h2>Liste des inscriptions</h2>
+
+        <div class="card shadow-sm p-4 mt-3">
+
+            <h4>{{ evenement.titre }}</h4>
+
+            <p>
+                Date :
+                {{ evenement.dateDebut|date('d/m/Y H:i') }}
+            </p>
+
+            <hr>
+
+            {% if inscriptions is not empty %}
+
+                <table class="table table-striped">
+
+                    <th>Nom du participant</th>
+                    <th>Email</th>
+                    <th>Date d'inscription</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+
+                    <tbody>
+
+                        {% for inscription in inscriptions %}
+
+                            <tr>
+                                <td>{{ inscription.nomParticipant }}</td>
+
+                                <td>{{ inscription.emailParticipant }}</td>
+
+                                <td>
+                                    {{ inscription.dateInscription|date('d/m/Y H:i') }}
+                                </td>
+
+                                <td>
+                                    {{ inscription.statut }}
+                                </td>
+                                <td>
+                                    <form
+                                        method="POST"
+                                        action="{{ path('app_inscription_annuler', {'id': inscription.id}) }}"
+                                        onsubmit="return confirm('Voulez-vous vraiment annuler cette inscription ?');"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="_token"
+                                            value="{{ csrf_token('annuler' ~ inscription.id) }}"
+                                        >
+
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            Annuler
+                                        </button>
+
+                                    </form>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            {% else %}
+
+                <div class="alert alert-info">
+                    Aucune inscription confirmée pour cet événement.
+                </div>
+
+            {% endif %}
+            <a href="{{ path('app_evenement') }}" class="btn btn-secondary mt-3">
+                <i class="bi bi-arrow-left"></i>
+                Retour aux événements
+            </a>
+        </div>
+
+    </div>
+
+{% endblock %}
