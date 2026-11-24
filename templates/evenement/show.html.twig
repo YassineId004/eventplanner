@@ -1,0 +1,57 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ evenement.titre }}
+{% endblock %}
+
+{% block body %}
+
+    <div class="container mt-4">
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <h2 class="mb-3">
+                    {{ evenement.titre }}
+                </h2>
+
+                <p>
+                    {{ evenement.description }}
+                </p>
+
+                <p>
+                    <strong>Date début :</strong>
+                    {{ evenement.dateDebut|date('d/m/Y H:i') }}
+                </p>
+
+                <p>
+                    <strong>Date fin :</strong>
+                    {{ evenement.dateFin|date('d/m/Y H:i') }}
+                </p>
+
+                <p>
+                    <strong>Lieu :</strong>
+                    {{ evenement.lieu }}
+                </p>
+
+                <p>
+                    <strong>Capacité maximale :</strong>
+                    {{ evenement.capaciteMax }}
+                </p>
+
+                <a
+                    href="{{ path('app_evenement') }}"
+                    class="btn btn-secondary"
+                >
+                    Retour aux événements
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

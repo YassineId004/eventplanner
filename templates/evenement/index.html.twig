@@ -1,0 +1,208 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des événements{% endblock %}
+
+{% block body %}
+
+    <div class="container mt-4">
+
+        {# Filtrage par catégorie #}
+        <form method="GET" action="{{ path('app_evenement') }}">
+
+            <select name="categorie" class="form-select mb-3">
+
+                <option value="">Toutes les catégories</option>
+
+                {% for categorie in categories %}
+
+                    <option
+                        value="{{ categorie.id }}"
+                        {% if categorieSelectionnee and categorieSelectionnee.id == categorie.id %}
+                        selected
+                        {% endif %}
+                    >
+                        {{ categorie.nom }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                Filtrer
+            </button>
+
+            <a href="{{ path('app_evenement') }}" class="btn btn-secondary">
+                Réinitialiser
+            </a>
+
+        </form>
+
+        {# Liste des événements #}
+        <div class="row mt-4">
+
+            {% for evenement in evenements %}
+
+                <div class="col-md-6 col-lg-4 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        <div class="card-body">
+
+                            <h5 class="card-title">
+                                {{ evenement.titre }}
+                            </h5>
+
+                            <p class="card-text">
+                                {{ evenement.description }}
+                            </p>
+
+                            <p>
+                                <strong>Date début :</strong>
+                                {{ evenement.dateDebut|date('d/m/Y H:i') }}
+                            </p>
+
+                            <p>
+                                <strong>Lieu :</strong>
+                                {{ evenement.lieu }}
+                            </p>
+
+                            <p>
+                                <strong>Date fin :</strong>
+                                {{ evenement.dateFin|date('d/m/Y H:i') }}
+                            </p>
+
+                            {# Calculer le nombre de places #}
+                            {% set placesReservees = nombresInscriptions[evenement.id] %}
+                            {% set capacite = evenement.capaciteMax %}
+
+                            {% if capacite > 0 %}
+                                {% set pourcentage = ((placesReservees / capacite) * 100)|round %}
+                            {% else %}
+                                {% set pourcentage = 0 %}
+                            {% endif %}
+
+                            {% if pourcentage > 100 %}
+                                {% set pourcentage = 100 %}
+                            {% endif %}
+
+                            {# Afficher la capacité #}
+                            <p>
+                                <strong>Capacité maximale :</strong>
+                                {{ capacite }} participants
+                            </p>
+
+                            {# Progress Bar #}
+                            <div
+                                class="progress mb-2"
+                                style="height: 10px;"
+                            >
+
+                                <div
+                                    class="progress-bar bg-success"
+                                    role="progressbar"
+                                    style="width: {{ pourcentage }}%;"
+                                    aria-valuenow="{{ pourcentage }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                >
+                                </div>
+
+                            </div>
+
+                            <p class="text-muted">
+                                {{ placesReservees }} / {{ capacite }} inscrits
+                            </p>
+
+                            {# Vérifier si l'événement est complet #}
+                            {% if statuts[evenement.id] %}
+                                <span class="badge bg-danger">Complet</span>
+                            {% else %}
+                                <span class="badge bg-success">Places disponibles</span>
+                            {% endif %}
+
+                        </div>
+
+                       
+                        <div class="card-footer">
+
+                            {# Détails : accessible à tout le monde #}
+                            <a
+                                href="{{ path('app_evenement_show', {'id': evenement.id}) }}"
+                                class="btn btn-info btn-sm"
+                            >
+                                Détails
+                            </a>
+
+                            {# Inscription : User connecté uniquement #}
+                            {% if is_granted('ROLE_USER') %}
+
+                                <a
+                                    href="{{ path('app_inscription_new', {'id': evenement.id}) }}"
+                                    class="btn btn-success btn-sm"
+                                >
+                                    S'inscrire
+                                </a>
+
+                            {% endif %}
+
+                            {# Boutons réservés à l'Admin #}
+                            {% if is_granted('ROLE_ADMIN') %}
+
+                                {# Voir les inscriptions #}
+                                <a
+                                    href="{{ path('app_inscription_liste', {'id': evenement.id}) }}"
+                                    class="btn btn-primary btn-sm"
+                                >
+                                    Voir les inscriptions
+                                </a>
+
+                                {# Modifier #}
+                                <a
+                                    href="{{ path('app_evenement_edit', {'id': evenement.id}) }}"
+                                    class="btn btn-warning btn-sm"
+                                >
+                                    Modifier
+                                </a>
+
+                                {# Supprimer #}
+                                <form
+                                    method="post"
+                                    action="{{ path('app_evenement_delete', {'id': evenement.id}) }}"
+                                    onsubmit="return confirm('Voulez-vous vraiment supprimer cet événement ?');"
+                                    class="d-inline"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="_token"
+                                        value="{{ csrf_token('delete' ~ evenement.id) }}"
+                                    >
+
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Supprimer
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <p>Aucun événement trouvé.</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+{% endblock %}
